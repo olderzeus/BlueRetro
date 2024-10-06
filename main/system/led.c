@@ -18,6 +18,7 @@
 #define ERR_LED_PIN 17
 #endif
 #define PICO_ERR_LED_PIN 20
+#define PICOD4_ERR_LED_PIN 2
 
 /* LED flags */
 enum {
@@ -64,7 +65,10 @@ void err_led_init(uint32_t package) {
     if (package == EFUSE_RD_CHIP_VER_PKG_ESP32PICOV302) {
         ledc_channel.gpio_num = PICO_ERR_LED_PIN;
         err_led_pin = PICO_ERR_LED_PIN;
-    }
+    } else if (package == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4) {
+        ledc_channel.gpio_num = PICOD4_ERR_LED_PIN;
+        err_led_pin = PICOD4_ERR_LED_PIN;
+    } 
 
     ledc_timer_config(&ledc_timer);
     ledc_channel_config(&ledc_channel);

@@ -13,6 +13,7 @@
 #include <esp_mac.h>
 #include <esp_timer.h>
 #include <driver/gpio.h>
+#include <esp32/rom/ets_sys.h>
 #include "nvs.h"
 #include "queue_bss.h"
 #include "host.h"

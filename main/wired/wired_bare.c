@@ -28,7 +28,7 @@ typedef void (*wired_port_cfg_t)(uint16_t mask);
 
 static const char *sys_name[WIRED_MAX] = {
     "AUTO",
-    "PARALLEL_1P_PP",
+    "DSLite",
     "PARALLEL_2P_PP",
     "NES",
     "PCE",
@@ -48,7 +48,7 @@ static const char *sys_name[WIRED_MAX] = {
     "GC",
     "Wii-EXT",
     "VB",
-    "PARALLEL_1P_OD",
+    "DSLite_OD",
     "PARALLEL_2P_OD",
     "SEA Board",
 };

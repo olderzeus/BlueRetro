@@ -1597,7 +1597,7 @@ void bt_hci_evt_hdlr(struct bt_hci_pkt *bt_hci_evt_pkt) {
         {
             struct bt_hci_evt_cmd_complete *cmd_complete = (struct bt_hci_evt_cmd_complete *)bt_hci_evt_pkt->evt_data;
             uint8_t status = bt_hci_evt_pkt->evt_data[sizeof(*cmd_complete)];
-            printf("# BT_HCI_EVT_CMD_COMPLETE\n");
+            printf("# BT_HCI_EVT_CMD_COMPLETE opcode: 0x%04X \n", cmd_complete->opcode);
             if (status != BT_HCI_ERR_SUCCESS && status != BT_HCI_ERR_UNKNOWN_CMD) {
                 printf("# opcode: 0x%04X error: 0x%02X retry: %ld\n", cmd_complete->opcode, status, bt_hci_pkt_retry);
                 switch (cmd_complete->opcode) {

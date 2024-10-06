@@ -10,7 +10,7 @@
 #include "parallel_1p.h"
 #include "soc/gpio_struct.h"
 #include "driver/gpio.h"
-
+/*
 #define P1_LD_UP 3
 #define P1_LD_DOWN 5
 #define P1_LD_LEFT 18
@@ -24,8 +24,27 @@
 #define P1_MT 16
 #define P1_LM 25
 #define P1_RM 33
+*/
 
-static const uint32_t para_1p_mask[4] = {0x337F0F00, 0x00000000, 0x00000000, BR_COMBO_MASK};
+#define P1_LD_UP 3
+#define P1_LD_DOWN 5
+#define P1_LD_LEFT 14
+#define P1_LD_RIGHT 15
+#define P1_RB_DOWN 27
+#define P1_RB_RIGHT 26
+#define P1_RB_LEFT 21
+#define P1_RB_UP 19
+#define P1_ST 32
+#define P1_SL 22
+#define P1_P0 13
+#define P1_P1 4
+#define P1_P2 1
+#define P1_P3 12  //pwr
+#define P1_LM 25
+#define P1_RM 33
+
+
+static const uint32_t para_1p_mask[4] = {0xF37F0F00, 0x00000000, 0x00000000, BR_COMBO_MASK};
 static const uint32_t para_1p_desc[4] = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 static DRAM_ATTR const uint32_t para_1p_btns_mask[32] = {
     0, 0, 0, 0,
@@ -33,9 +52,11 @@ static DRAM_ATTR const uint32_t para_1p_btns_mask[32] = {
     BIT(P1_LD_LEFT), BIT(P1_LD_RIGHT), BIT(P1_LD_DOWN), BIT(P1_LD_UP),
     0, 0, 0, 0,
     BIT(P1_RB_LEFT), BIT(P1_RB_RIGHT), BIT(P1_RB_DOWN), BIT(P1_RB_UP),
-    BIT(P1_MM - 32) | 0xF0000000, BIT(P1_MS), BIT(P1_MT), 0,
+    //BIT(P1_ST - 32) | 0xF0000000, BIT(P1_SL), BIT(P1_MT), 0,
+    BIT(P1_ST - 32) | 0xF0000000, BIT(P1_SL), BIT(P1_P3), 0,
     BIT(P1_LM), BIT(P1_LM), 0, 0,
-    BIT(P1_RM - 32) | 0xF0000000, BIT(P1_RM - 32) | 0xF0000000, 0, 0,
+    //BIT(P1_RM - 32) | 0xF0000000, BIT(P1_RM - 32) | 0xF0000000, 0, 0,
+    BIT(P1_RM - 32) | 0xF0000000, BIT(P1_P0), BIT(P1_P1), BIT(P1_P2),
 };
 
 void IRAM_ATTR para_1p_init_buffer(int32_t dev_mode, struct wired_data *wired_data) {

@@ -9,7 +9,8 @@
 #include "tools/util.h"
 
 static const uint8_t output_list[] = {
-    3, 5, 16, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33
+    //3, 5, 16, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33
+    1, 3, 4, 5, 12, 13, 14, 15, 19, 21, 22, 25, 26, 27, 32, 33
 };
 
 void parallel_io_init(void)
