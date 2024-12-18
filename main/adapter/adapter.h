@@ -22,7 +22,7 @@
 #define WIRED_MAX_DEV 12 /* Saturn limit */
 #define ADAPTER_MAX_AXES 6
 #define ADAPTER_PS2_MAX_AXES 16
-#define REPORT_MAX_USAGE 16
+#define REPORT_MAX_USAGE 18
 #define HID_MAX_REPORT 10
 #define MAX_PULL_BACK 0.95
 
@@ -514,7 +514,11 @@ struct bt_data_base {
     uint32_t input_len;
     uint8_t *sdp_data;
     uint32_t sdp_len;
+    uint8_t *pnp_data;
+    uint32_t pnp_len;
     int32_t axes_cal[ADAPTER_PS2_MAX_AXES];
+    uint16_t vid;
+    uint16_t pid;
     uint8_t output[128];
 };
 

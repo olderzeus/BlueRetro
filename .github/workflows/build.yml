@@ -1,10 +1,8 @@
 name: build
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
   workflow_dispatch:
+  schedule:
+    - cron:  '0 10 * * *'
 
 jobs:
   build:
@@ -26,7 +24,7 @@ jobs:
             br_config: qemu_bt_trace_replay_test
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/darthcloud/idf-blueretro:v5.3.0_2024-02-18
+      image: ghcr.io/darthcloud/idf-blueretro:v5.5.0_2024-12-02
     outputs:
       br_version: ${{ env.br_version }}
 
@@ -36,7 +34,14 @@ jobs:
       with:
         submodules: recursive
         fetch-depth: 0
+    - name: Cron needed check
+      shell: bash
+      if: github.event_name == 'schedule'
+      run: if [[ "$(git log --oneline --since '24 hours ago' | wc -l)" == "0" ]]; then gh run cancel ${{ github.run_id }}; gh run watch ${{ github.run_id }}; fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Build with ESP-IDF
+      shell: bash
       run: |
         . $IDF_PATH/export.sh
         echo "br_version=$(git describe --always --tags --dirty)" >> $GITHUB_ENV
