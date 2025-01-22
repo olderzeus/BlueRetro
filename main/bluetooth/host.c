@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2024, Jacques Gagnon
+ * Copyright (c) 2019-2025, Jacques Gagnon
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -198,10 +198,8 @@ static void bt_tx_task(void *param) {
                     vTaskDelay(packet[1] / portTICK_PERIOD_MS);
                 }
                 else {
-#ifdef CONFIG_BLUERETRO_BT_H4_TRACE
                     bt_mon_tx((packet[0] == BT_HCI_H4_TYPE_CMD) ? BT_MON_CMD : BT_MON_ACL_TX,
                         packet + 1, packet_len - 1);
-#endif /* CONFIG_BLUERETRO_BT_H4_TRACE */
                     atomic_clear_bit(&bt_flags, BT_CTRL_READY);
                     esp_vhci_host_send_packet(packet, packet_len);
                 }
@@ -216,6 +214,7 @@ static void bt_tx_task(void *param) {
 
 static void bt_fb_task(void *param) {
     static bool rumble_en = false;
+    static bool rumble_on = false;
     uint32_t *fb_len;
     struct raw_fb *fb_data = NULL;
     uint32_t delay_cnt = BT_FB_TASK_DELAY_CNT; /* 100ms * 30 = 3sec */
@@ -249,7 +248,7 @@ static void bt_fb_task(void *param) {
                 case FB_TYPE_RUMBLE:
                     if (bt_data) {
                         rumble_en = true;
-                        adapter_bridge_fb(fb_data, bt_data);
+                        rumble_on = (bool)adapter_bridge_fb(fb_data, bt_data);
                         delay_cnt = 0;
                     }
                     break;
@@ -269,8 +268,8 @@ static void bt_fb_task(void *param) {
             queue_bss_return(wired_adapter.input_q_hdl, (uint8_t *)fb_data, fb_len);
         }
 
-        /* TX Feedback every ~frame, double as a keep alive */
-        if (delay_cnt-- == 0) {
+        /* TX Feedback every 100 ms if rumble on, every 3 sec otherwise */
+        if (delay_cnt-- == 0 || rumble_on) {
             for (uint32_t i = 0; i < BT_MAX_DEV; i++) {
                 struct bt_dev *device = &bt_dev[i];
 
@@ -389,10 +388,8 @@ static void bt_host_tx_pkt_ready(void) {
  */
 static int bt_host_rx_pkt(uint8_t *data, uint16_t len) {
     struct bt_hci_pkt *bt_hci_pkt = (struct bt_hci_pkt *)data;
-#ifdef CONFIG_BLUERETRO_BT_H4_TRACE
     bt_mon_tx((bt_hci_pkt->h4_hdr.type == BT_HCI_H4_TYPE_EVT) ? BT_MON_EVT : BT_MON_ACL_RX,
         data + 1, len - 1);
-#endif /* CONFIG_BLUERETRO_BT_H4_TRACE */
 
 #ifdef CONFIG_BLUERETRO_BT_TIMING_TESTS
     if (atomic_test_bit(&bt_flags, BT_HOST_DBG_MODE)) {
@@ -619,10 +616,7 @@ int32_t bt_host_init(void) {
 
     bt_host_load_bdaddr_from_nvs();
 
-#ifdef CONFIG_BLUERETRO_BT_H4_TRACE
-    bt_mon_init(UART_NUM_1, 921600, UART_DATA_8_BITS, UART_STOP_BITS_1,
-        UART_PARITY_DISABLE, UART_HW_FLOWCTRL_DISABLE);
-#endif
+    bt_mon_init();
 
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
 
@@ -705,8 +699,12 @@ int32_t bt_host_load_le_ltk(bt_addr_le_t *le_bdaddr, struct bt_smp_encrypt_info 
     int32_t ret = -1;
     for (uint32_t i = 0; i < ARRAY_SIZE(bt_host_le_link_keys.keys); i++) {
         if (memcmp((void *)le_bdaddr, (void *)&bt_host_le_link_keys.keys[i].le_bdaddr, sizeof(*le_bdaddr)) == 0) {
-            memcpy((void *)encrypt_info, &bt_host_le_link_keys.keys[i].ltk, sizeof(*encrypt_info));
-            memcpy((void *)master_ident, &bt_host_le_link_keys.keys[i].ident, sizeof(*master_ident));
+            if (encrypt_info) {
+                memcpy((void *)encrypt_info, &bt_host_le_link_keys.keys[i].ltk, sizeof(*encrypt_info));
+            }
+            if (master_ident) {
+                memcpy((void *)master_ident, &bt_host_le_link_keys.keys[i].ident, sizeof(*master_ident));
+            }
             ret = 0;
         }
     }
